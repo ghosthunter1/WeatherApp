@@ -6,6 +6,8 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.StrictMode;
@@ -18,6 +20,7 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -85,6 +88,7 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
         buildGoogleClient();
         searchview();
+        connectionProblemSnackbar();
 
     }
 
@@ -94,7 +98,11 @@ public class MainActivity extends AppCompatActivity
         searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                new FindCityByName().execute(query, unit);
+                if (isNetworkAvailable()) {
+                    new FindCityByName().execute(query, unit);
+                } else {
+                    connectionProblemSnackbar();
+                }
                 return false;
             }
 
@@ -153,6 +161,28 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
 
+    }
+
+    private void connectionProblemSnackbar() {
+        if (!isNetworkAvailable()) {
+            Snackbar snackbar = Snackbar.make(coordinatLayout, "Connection Problem", Snackbar.LENGTH_INDEFINITE);
+            snackbar.setAction("Retry", new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    recreate();
+                }
+            });
+            snackbar.getView().setBackgroundColor(Color.TRANSPARENT);
+            snackbar.show();
+        }
+
+    }
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
 
@@ -238,7 +268,6 @@ public class MainActivity extends AppCompatActivity
                     mLastUpdate.setText(String.valueOf(calendar.getTime()));
                     mWindSpeed.setText(String.valueOf(weather.getWind().getSpeed()));
                     mName.setText(weather.getName());
-                    Toast.makeText(MainActivity.this , "WORKING" , Toast.LENGTH_LONG).show();
 
 
                     for (int i = 0; i < weather.getWeather().size(); i++) {
