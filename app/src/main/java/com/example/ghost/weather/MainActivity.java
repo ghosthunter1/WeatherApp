@@ -268,6 +268,7 @@ public class MainActivity extends AppCompatActivity
                     mLastUpdate.setText(String.valueOf(calendar.getTime()));
                     mWindSpeed.setText(String.valueOf(weather.getWind().getSpeed()));
                     mName.setText(weather.getName());
+                    Toast.makeText(MainActivity.this , "WORKING" , Toast.LENGTH_LONG).show();
 
 
                     for (int i = 0; i < weather.getWeather().size(); i++) {
