@@ -99,17 +99,20 @@ public class FavoritesActivity extends AppCompatActivity implements NavigationVi
         searchView();
         intents();
         onListviewItemClick();
+        connectionProblemSnackbar();
 
 
     }
 
     private void savedCityNames() {
-        SharedPreferences sharedPreferences = FavoritesActivity.this.getSharedPreferences("CITYNAMES", MODE_APPEND);
-        Set<String> saves = sharedPreferences.getStringSet("NAMES", null);
-        if (saves != null) {
-            Iterator<String> iterator = saves.iterator();
-            while (iterator.hasNext()) {
-                new FindCityByName().execute(iterator.next(), preferences());
+        if (isNetworkAvailable()) {
+            SharedPreferences sharedPreferences = FavoritesActivity.this.getSharedPreferences("CITYNAMES", MODE_APPEND);
+            Set<String> saves = sharedPreferences.getStringSet("NAMES", null);
+            if (saves != null) {
+                Iterator<String> iterator = saves.iterator();
+                while (iterator.hasNext() && isNetworkAvailable()) {
+                    new FindCityByName().execute(iterator.next(), preferences());
+                }
             }
         }
     }
@@ -234,6 +237,7 @@ public class FavoritesActivity extends AppCompatActivity implements NavigationVi
             public void onClick(View view) {
                 adapter.remove(weather);
                 set.remove(cityName);
+                sharedPreferences();
             }
         });
     }
@@ -335,6 +339,7 @@ public class FavoritesActivity extends AppCompatActivity implements NavigationVi
                     if (!set.contains(weather.getName())) {
                         adapter.add(weather);
                         set.add(weather.getName());
+                        sharedPreferences();
                     }
                 }
 
@@ -361,6 +366,5 @@ public class FavoritesActivity extends AppCompatActivity implements NavigationVi
     @Override
     protected void onStop() {
         super.onStop();
-        sharedPreferences();
     }
 }

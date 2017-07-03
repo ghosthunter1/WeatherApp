@@ -5,6 +5,7 @@ import android.app.ActionBar;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
 import android.net.ConnectivityManager;
@@ -29,6 +30,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.ghost.weather.objects.MainWeather;
 import com.example.ghost.weather.R;
@@ -66,6 +68,7 @@ public class MainActivity extends AppCompatActivity
     private View view;
     private PopupMenu popupMenu;
     private boolean intentHasExtras = false;
+    private double longtitude, latitude;
 
 
     @Override
@@ -112,6 +115,67 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+    private void background(int i) {
+        switch (weather.getWeather().get(i).getIcon()) {
+            case "09d":
+                coordinatLayout.setBackgroundResource(R.drawable.rain);
+                break;
+            case "09n":
+                coordinatLayout.setBackgroundResource(R.drawable.rain);
+                break;
+            case "10d":
+                coordinatLayout.setBackgroundResource(R.drawable.rain);
+                break;
+            case "10n":
+                coordinatLayout.setBackgroundResource(R.drawable.rain);
+                break;
+            case "01d":
+                coordinatLayout.setBackgroundResource(R.drawable.clearsky);
+                break;
+            case "01n":
+                coordinatLayout.setBackgroundResource(R.drawable.nightclearsky);
+                break;
+            case "02d":
+                coordinatLayout.setBackgroundResource(R.drawable.fewcloud);
+                break;
+            case "02n":
+                coordinatLayout.setBackgroundResource(R.drawable.nightcloud);
+                break;
+            case "03d":
+                coordinatLayout.setBackgroundResource(R.drawable.scattered);
+                break;
+
+            case "03n":
+                coordinatLayout.setBackgroundResource(R.drawable.nightcloud);
+                break;
+            case "04d":
+                coordinatLayout.setBackgroundResource(R.drawable.brokencloud);
+                break;
+            case "04n":
+                coordinatLayout.setBackgroundResource(R.drawable.brokencloud);
+                break;
+            case "11d":
+                coordinatLayout.setBackgroundResource(R.drawable.storm);
+                break;
+            case "11n":
+                coordinatLayout.setBackgroundResource(R.drawable.storm);
+                break;
+            case "13d":
+                coordinatLayout.setBackgroundResource(R.drawable.snow);
+                break;
+            case "13n":
+                coordinatLayout.setBackgroundResource(R.drawable.nightsnow);
+                break;
+            case "50d":
+                coordinatLayout.setBackgroundResource(R.drawable.mist);
+                break;
+            case "50n":
+                coordinatLayout.setBackgroundResource(R.drawable.nightmist);
+                break;
+
+        }
+    }
+
     private void searchview() {
         searchView = (MaterialSearchView) findViewById(R.id.search_view);
         searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
@@ -143,6 +207,8 @@ public class MainActivity extends AppCompatActivity
         if (getIntent().hasExtra("CITYNAME")) {
             new FindCityByName().execute(getIntent().getStringExtra("CITYNAME"), unit);
             intentHasExtras = true;
+        } else {
+            intentHasExtras = false;
         }
     }
 
@@ -208,17 +274,20 @@ public class MainActivity extends AppCompatActivity
                 final MenuItem celsius = popupMenu.getMenu().findItem(R.id.menu_celsius);
                 final MenuItem fahrenheit = popupMenu.getMenu().findItem(R.id.menu_fahrenheit);
                 String units = preferences();
-                if (units.endsWith("metric")) {
-                    fahrenheit.setChecked(false);
-                    celsius.setChecked(true);
+                if (preferences() != null){
+                    if (units.endsWith("metric")) {
+                        fahrenheit.setChecked(false);
+                        celsius.setChecked(true);
 
 
-                } else if (units.endsWith("imperial")) {
+                    } else if (units.endsWith("imperial")) {
 
-                    celsius.setChecked(false);
-                    fahrenheit.setChecked(true);
+                        celsius.setChecked(false);
+                        fahrenheit.setChecked(true);
 
+                    }
                 }
+
                 popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
@@ -263,11 +332,12 @@ public class MainActivity extends AppCompatActivity
         }
         location = LocationServices.FusedLocationApi.getLastLocation(client);
         if (location != null && !intentHasExtras) {
-            double latitude = location.getLatitude();
-            double longtitude = location.getLongitude();
+            latitude = location.getLatitude();
+            longtitude = location.getLongitude();
             new FindCityByCoordinates().execute(String.valueOf(latitude), String.valueOf(longtitude), unit);
         }
     }
+
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     private void locationRequest() {
@@ -364,13 +434,11 @@ public class MainActivity extends AppCompatActivity
                     for (int i = 0; i < weather.getWeather().size(); i++) {
                         Picasso.with(MainActivity.this).load("http://openweathermap.org/img/w/" + weather.getWeather().get(i).getIcon() + ".png").into(picture);
                         mDescription.setText(weather.getWeather().get(i).getDescription());
+                        background(i);
                     }
 
 
                 } else {
-                    if (line.getVisibility() == TextView.VISIBLE) {
-                        line.setVisibility(TextView.GONE);
-                    }
                     Snackbar snackbar = Snackbar.make(coordinatLayout, "Not Found", Snackbar.LENGTH_LONG);
                     snackbar.getView().setBackgroundColor(Color.TRANSPARENT);
                     snackbar.setActionTextColor(Color.WHITE);
@@ -435,13 +503,12 @@ public class MainActivity extends AppCompatActivity
                     for (int i = 0; i < weather.getWeather().size(); i++) {
                         Picasso.with(MainActivity.this).load("http://openweathermap.org/img/w/" + weather.getWeather().get(i).getIcon() + ".png").into(picture);
                         mDescription.setText(weather.getWeather().get(i).getDescription());
+                        background(i);
                     }
 
 
                 } else {
-                    if (line.getVisibility() == TextView.VISIBLE) {
-                        line.setVisibility(TextView.GONE);
-                    }
+
                     Snackbar snackbar = Snackbar.make(coordinatLayout, "Not Found", Snackbar.LENGTH_LONG);
                     snackbar.getView().setBackgroundColor(Color.TRANSPARENT);
                     snackbar.setActionTextColor(Color.WHITE);
