@@ -1,20 +1,22 @@
-package com.example.ghost.weather;
+package com.example.ghost.weather.activites;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.pm.PackageManager;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.location.Location;
-import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.os.StrictMode;
+import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
-import android.support.v4.app.ActivityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -26,11 +28,11 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.example.ghost.weather.objects.MainWeather;
+import com.example.ghost.weather.R;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.gson.Gson;
@@ -38,7 +40,6 @@ import com.miguelcatalan.materialsearchview.MaterialSearchView;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
-import java.security.Permission;
 import java.util.Calendar;
 
 import okhttp3.OkHttpClient;
@@ -46,8 +47,8 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity
-        implements GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks {
-    private TextView mTemp, mName, mHumidity, mPreesure, mClouds, mLastUpdate, mWindSpeed, mDescription, mMinMax;
+        implements GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks, NavigationView.OnNavigationItemSelectedListener {
+    private TextView mTemp, mName, navHome, navFavorite, navTempUnit, mHumidity, mPreesure, mClouds, mLastUpdate, mWindSpeed, mDescription, line, mMinMax;
     private MaterialSearchView searchView;
     private ImageView picture;
     private MainWeather weather;
@@ -59,6 +60,10 @@ public class MainActivity extends AppCompatActivity
     private String unit = "metric";
     private GoogleApiClient client;
     private Location location;
+    private DrawerLayout drawerLayout;
+    private NavigationView navigationView;
+    private ActionBarDrawerToggle actionBarDrawerToggle;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,15 +85,28 @@ public class MainActivity extends AppCompatActivity
         mMinMax = (TextView) findViewById(R.id.city_min_max);
         picture = (ImageView) findViewById(R.id.picture);
         mWindSpeed = (TextView) findViewById(R.id.city_wind_speed);
+        drawerLayout = (DrawerLayout) findViewById(R.id.mainactivity_drawer_layout);
+        navigationView = (NavigationView) findViewById(R.id.navigation_view);
+        line = (TextView) findViewById(R.id.line);
         calendar = Calendar.getInstance();
         calendar.setTimeInMillis(System.currentTimeMillis());
         coordinatLayout = (CoordinatorLayout) findViewById(R.id.mainactivity_coordinat_layout);
+        View view = navigationView.getHeaderView(0);
+        navHome = (TextView) view.findViewById(R.id.navigation_home);
+        navFavorite = (TextView) view.findViewById(R.id.navigation_favorite);
+        navTempUnit = (TextView) view.findViewById(R.id.navigation_temp_unit);
+        navigationView.setNavigationItemSelectedListener(this);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setBackgroundColor(Color.TRANSPARENT);
         setSupportActionBar(toolbar);
+        navigationView();
+        if (preferences() != null) {
+            unit = preferences();
+        }
         buildGoogleClient();
         searchview();
         connectionProblemSnackbar();
+        intents();
 
     }
 
@@ -113,6 +131,25 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
+    private void navigationView() {
+        actionBarDrawerToggle = new ActionBarDrawerToggle(MainActivity.this, drawerLayout, toolbar, R.string.drawer_open, R.string.drawer_close);
+        drawerLayout.addDrawerListener(actionBarDrawerToggle);
+        actionBarDrawerToggle.syncState();
+
+    }
+
+    private String preferences() {
+        SharedPreferences sharedPreferences = this.getSharedPreferences("SAVE", MODE_PRIVATE);
+        return sharedPreferences.getString("unit", null);
+    }
+
+    private void saveTemperatureUnit() {
+        SharedPreferences sharedPreferences = this.getSharedPreferences("SAVE", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("unit", unit);
+        editor.commit();
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.view_search, menu);
@@ -132,6 +169,15 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+    private void intents() {
+        navFavorite.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, FavoritesActivity.class);
+                startActivity(intent);
+            }
+        });
+    }
 
     @Override
     public void onConnected(Bundle bundle) {
@@ -185,6 +231,11 @@ public class MainActivity extends AppCompatActivity
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        return false;
+    }
+
 
     class FindCityByName extends AsyncTask<String, String, String> {
         @Override
@@ -211,13 +262,24 @@ public class MainActivity extends AppCompatActivity
             if (s != null && s.contains("cod")) {
                 weather = gson.fromJson(s, MainWeather.class);
                 if (weather.getCod() == 200) {
-                    mTemp.setText(String.valueOf(weather.getMain().getTemp()));
-                    mMinMax.setText(String.valueOf(weather.getMain().getTempMax()) + " / " + String.valueOf(weather.getMain().getTempMin()));
-                    mClouds.setText(String.valueOf(weather.getClouds().getAll()));
-                    mHumidity.setText(String.valueOf(weather.getMain().getHumidity()));
-                    mPreesure.setText(String.valueOf(weather.getMain().getPressure()));
+                    if (!(line.getVisibility() == TextView.VISIBLE)) {
+                        line.setVisibility(TextView.VISIBLE);
+                    }
+                    if (unit.equals("metric")) {
+                        mTemp.setText(String.valueOf(weather.getMain().getTemp()) + "\u2103");
+                    } else {
+                        mTemp.setText(String.valueOf(weather.getMain().getTemp()) + "\u2109");
+                    }
+                    mMinMax.setText(String.valueOf(weather.getMain().getTempMax()) + "\u00B0" + " / " + String.valueOf(weather.getMain().getTempMin()) + "\u00B0");
+                    mClouds.setText(String.valueOf(weather.getClouds().getAll()) + "%" + "\n" + "Clouds");
+                    mHumidity.setText(String.valueOf(weather.getMain().getHumidity()) + "%" + "\n" + "Humidity");
+                    mPreesure.setText(String.valueOf(weather.getMain().getPressure()) + " hPa" + "\n" + "Pressure");
                     mLastUpdate.setText(String.valueOf(calendar.getTime()));
-                    mWindSpeed.setText(String.valueOf(weather.getWind().getSpeed()));
+                    if (unit.equals("metric")) {
+                        mWindSpeed.setText(String.valueOf(weather.getWind().getSpeed() + " Meter/Sec") + "\n" + "Wind Speed");
+                    } else {
+                        mWindSpeed.setText(String.valueOf(weather.getWind().getSpeed() + " Mile/Hour") + "\n" + "WindSpeed");
+                    }
                     mName.setText(weather.getName());
 
 
@@ -228,7 +290,18 @@ public class MainActivity extends AppCompatActivity
 
 
                 } else {
-                    Snackbar.make(coordinatLayout, "Not Found", Snackbar.LENGTH_LONG).show();
+                    if (line.getVisibility() == TextView.VISIBLE) {
+                        line.setVisibility(TextView.GONE);
+                    }
+                    Snackbar snackbar = Snackbar.make(coordinatLayout, "Not Found", Snackbar.LENGTH_LONG);
+                    snackbar.getView().setBackgroundColor(Color.TRANSPARENT);
+                    snackbar.setActionTextColor(Color.WHITE);
+                    snackbar.show();
+                }
+
+            } else {
+                if (line.getVisibility() == TextView.VISIBLE) {
+                    line.setVisibility(TextView.GONE);
                 }
             }
         }
@@ -260,15 +333,25 @@ public class MainActivity extends AppCompatActivity
             if (s != null && s.contains("cod")) {
                 weather = gson.fromJson(s, MainWeather.class);
                 if (weather.getCod() == 200) {
-                    mTemp.setText(String.valueOf(weather.getMain().getTemp()));
-                    mMinMax.setText(String.valueOf(weather.getMain().getTempMax()) + " / " + String.valueOf(weather.getMain().getTempMin()));
-                    mClouds.setText(String.valueOf(weather.getClouds().getAll()));
-                    mHumidity.setText(String.valueOf(weather.getMain().getHumidity()));
-                    mPreesure.setText(String.valueOf(weather.getMain().getPressure()));
+                    if (!(line.getVisibility() == TextView.VISIBLE)) {
+                        line.setVisibility(TextView.VISIBLE);
+                    }
+                    if (unit.equals("metric")) {
+                        mTemp.setText(String.valueOf(weather.getMain().getTemp()) + "\u2103");
+                    } else {
+                        mTemp.setText(String.valueOf(weather.getMain().getTemp()) + "\u2109");
+                    }
+                    mMinMax.setText(String.valueOf(weather.getMain().getTempMax()) + "\u00B0" + " / " + String.valueOf(weather.getMain().getTempMin()) + "\u00B0");
+                    mClouds.setText(String.valueOf(weather.getClouds().getAll()) + "%" + "\n" + "Clouds");
+                    mHumidity.setText(String.valueOf(weather.getMain().getHumidity()) + "%" + "\n" + "Humidity");
+                    mPreesure.setText(String.valueOf(weather.getMain().getPressure()) + " hPa" + "\n" + "Pressure");
                     mLastUpdate.setText(String.valueOf(calendar.getTime()));
-                    mWindSpeed.setText(String.valueOf(weather.getWind().getSpeed()));
+                    if (unit.equals("metric")) {
+                        mWindSpeed.setText(String.valueOf(weather.getWind().getSpeed() + " Meter/Sec") + "\n" + "Wind Speed");
+                    } else {
+                        mWindSpeed.setText(String.valueOf(weather.getWind().getSpeed() + " Mile/Hour") + "\n" + "WindSpeed");
+                    }
                     mName.setText(weather.getName());
-                    Toast.makeText(MainActivity.this , "WORKING" , Toast.LENGTH_LONG).show();
 
 
                     for (int i = 0; i < weather.getWeather().size(); i++) {
@@ -278,7 +361,18 @@ public class MainActivity extends AppCompatActivity
 
 
                 } else {
-                    Snackbar.make(coordinatLayout, "Not Found", Snackbar.LENGTH_LONG).show();
+                    if (line.getVisibility() == TextView.VISIBLE) {
+                        line.setVisibility(TextView.GONE);
+                    }
+                    Snackbar snackbar = Snackbar.make(coordinatLayout, "Not Found", Snackbar.LENGTH_LONG);
+                    snackbar.getView().setBackgroundColor(Color.TRANSPARENT);
+                    snackbar.setActionTextColor(Color.WHITE);
+                    snackbar.show();
+                }
+
+            } else {
+                if (line.getVisibility() == TextView.VISIBLE) {
+                    line.setVisibility(TextView.GONE);
                 }
             }
         }
@@ -295,7 +389,9 @@ public class MainActivity extends AppCompatActivity
     protected void onStop() {
         super.onStop();
         client.disconnect();
+        saveTemperatureUnit();
     }
+
 }
 
 

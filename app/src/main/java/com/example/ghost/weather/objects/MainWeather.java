@@ -1,7 +1,8 @@
 
-package com.example.ghost.weather;
+package com.example.ghost.weather.objects;
 
 import java.util.List;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 

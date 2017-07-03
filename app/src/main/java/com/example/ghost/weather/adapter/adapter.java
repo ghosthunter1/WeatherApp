@@ -1,4 +1,4 @@
-package com.example.ghost.weather;
+package com.example.ghost.weather.adapter;
 
 /**
  * Created by ghost on 7/2/17.
