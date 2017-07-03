@@ -109,7 +109,7 @@ public class FavoritesActivity extends AppCompatActivity implements NavigationVi
         if (saves != null) {
             Iterator<String> iterator = saves.iterator();
             while (iterator.hasNext()) {
-                new FindCityByName().execute(iterator.next(), unit);
+                new FindCityByName().execute(iterator.next(), preferences());
             }
         }
     }
@@ -155,12 +155,14 @@ public class FavoritesActivity extends AppCompatActivity implements NavigationVi
                 if (units.endsWith("metric")) {
                     fahrenheit.setChecked(false);
                     celsius.setChecked(true);
+                    saveTemperatureUnit();
 
 
                 } else if (units.endsWith("imperial")) {
 
                     celsius.setChecked(false);
                     fahrenheit.setChecked(true);
+                    savedCityNames();
 
                 }
                 popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
@@ -168,20 +170,21 @@ public class FavoritesActivity extends AppCompatActivity implements NavigationVi
                     public boolean onMenuItemClick(MenuItem item) {
                         switch (item.getItemId()) {
                             case R.id.menu_celsius:
+                                unit = "metric";
+                                saveTemperatureUnit();
                                 if (!item.isChecked()) {
                                     item.setChecked(true);
-                                    unit = "metric";
-                                    saveTemperatureUnit();
                                     if (fahrenheit.isChecked()) {
                                         fahrenheit.setChecked(false);
+                                        ;
                                     }
                                 }
                                 break;
                             case R.id.menu_fahrenheit:
+                                unit = "imperial";
+                                saveTemperatureUnit();
                                 if (!item.isChecked()) {
                                     item.setChecked(true);
-                                    unit = "imperial";
-                                    saveTemperatureUnit();
                                     if (celsius.isChecked()) {
                                         celsius.setChecked(false);
                                     }
@@ -199,6 +202,7 @@ public class FavoritesActivity extends AppCompatActivity implements NavigationVi
 
     }
 
+
     private void onListviewItemClick() {
         listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
@@ -210,7 +214,16 @@ public class FavoritesActivity extends AppCompatActivity implements NavigationVi
                     remove.setVisibility(ImageView.VISIBLE);
                 }
                 removeItem(remove, adapter.getItem(i), adapter.getItem(i).getName());
-                return false;
+                return true;
+            }
+        });
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Intent intent = new Intent(FavoritesActivity.this, MainActivity.class);
+                intent.putExtra("CITYNAME", adapter.getItem(i).getName());
+                startActivity(intent);
             }
         });
     }

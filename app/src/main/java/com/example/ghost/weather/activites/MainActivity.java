@@ -65,6 +65,7 @@ public class MainActivity extends AppCompatActivity
     private ActionBarDrawerToggle actionBarDrawerToggle;
     private View view;
     private PopupMenu popupMenu;
+    private boolean intentHasExtras = false;
 
 
     @Override
@@ -104,6 +105,7 @@ public class MainActivity extends AppCompatActivity
             unit = preferences();
         }
         buildGoogleClient();
+        intentHasExtras();
         searchview();
         connectionProblemSnackbar();
         intents();
@@ -137,11 +139,19 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+    private void intentHasExtras() {
+        if (getIntent().hasExtra("CITYNAME")) {
+            new FindCityByName().execute(getIntent().getStringExtra("CITYNAME"), unit);
+            intentHasExtras = true;
+        }
+    }
+
 
     private String preferences() {
         SharedPreferences sharedPreferences = this.getSharedPreferences("SAVE", MODE_PRIVATE);
         return sharedPreferences.getString("unit", null);
     }
+
     private void saveTemperatureUnit() {
         SharedPreferences sharedPreferences = this.getSharedPreferences("SAVE", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -252,7 +262,7 @@ public class MainActivity extends AppCompatActivity
             locationRequest();
         }
         location = LocationServices.FusedLocationApi.getLastLocation(client);
-        if (location != null) {
+        if (location != null && !intentHasExtras) {
             double latitude = location.getLatitude();
             double longtitude = location.getLongitude();
             new FindCityByCoordinates().execute(String.valueOf(latitude), String.valueOf(longtitude), unit);
