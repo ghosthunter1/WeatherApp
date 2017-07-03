@@ -5,7 +5,7 @@
     android:id="@+id/mainactivity_coordinat_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#000"
+    android:background="@drawable/mist"
     tools:context="com.example.ghost.weather.activites.MainActivity">
 
 
@@ -47,7 +47,7 @@
                 android:layout_marginBottom="10dp"
                 android:layout_marginTop="20dp"
                 android:textColor="@color/white"
-                android:textSize="20dp" />
+                android:textSize="20sp" />
 
             <TextView
                 android:id="@+id/last_update"
@@ -72,7 +72,7 @@
                 android:layout_marginLeft="70dp"
                 android:layout_marginTop="50dp"
                 android:textColor="@color/white"
-                android:textSize="40dp" />
+                android:textSize="40sp" />
 
 
             <TextView
@@ -82,7 +82,7 @@
                 android:layout_gravity="center"
                 android:layout_marginLeft="30dp"
                 android:textColor="@color/white"
-                android:textSize="30dp" />
+                android:textSize="30sp" />
 
             <TextView
                 android:id="@+id/city_min_max"
@@ -91,7 +91,7 @@
                 android:layout_gravity="center"
                 android:layout_marginLeft="40dp"
                 android:textColor="@color/white"
-                android:textSize="20dp" />
+                android:textSize="20sp" />
 
 
             <TextView
@@ -101,7 +101,7 @@
                 android:layout_gravity="left"
                 android:layout_marginTop="50dp"
                 android:textColor="@color/white"
-                android:textSize="25dp" />
+                android:textSize="25sp" />
 
             <TextView
                 android:id="@+id/line"
@@ -123,7 +123,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
                     android:textColor="@color/white"
-                    android:textSize="17dp" />
+                    android:textSize="17sp" />
 
                 <TextView
                     android:id="@+id/city_preesure"
@@ -133,7 +133,7 @@
                     android:layout_marginLeft="100dp"
                     android:layout_marginTop="20dp"
                     android:textColor="@color/white"
-                    android:textSize="17dp" />
+                    android:textSize="17sp" />
 
                 <TextView
                     android:id="@+id/city_wind_speed"
@@ -143,7 +143,7 @@
                     android:layout_gravity="right"
                     android:layout_marginTop="20dp"
                     android:textColor="@color/white"
-                    android:textSize="17dp" />
+                    android:textSize="17sp" />
 
 
             </RelativeLayout>

@@ -1,6 +1,7 @@
 package com.example.ghost.weather.activites;
 
 import android.Manifest;
+import android.app.ActionBar;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -19,13 +20,13 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -56,20 +57,22 @@ public class MainActivity extends AppCompatActivity
     private CoordinatorLayout coordinatLayout;
     private Toolbar toolbar;
     private Calendar calendar;
-    private LocationRequest locationRequest;
     private String unit = "metric";
     private GoogleApiClient client;
     private Location location;
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
     private ActionBarDrawerToggle actionBarDrawerToggle;
+    private View view;
+    private PopupMenu popupMenu;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        this.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main);
         iniUI();
     }
@@ -91,14 +94,11 @@ public class MainActivity extends AppCompatActivity
         calendar = Calendar.getInstance();
         calendar.setTimeInMillis(System.currentTimeMillis());
         coordinatLayout = (CoordinatorLayout) findViewById(R.id.mainactivity_coordinat_layout);
-        View view = navigationView.getHeaderView(0);
-        navHome = (TextView) view.findViewById(R.id.navigation_home);
-        navFavorite = (TextView) view.findViewById(R.id.navigation_favorite);
-        navTempUnit = (TextView) view.findViewById(R.id.navigation_temp_unit);
         navigationView.setNavigationItemSelectedListener(this);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setBackgroundColor(Color.TRANSPARENT);
         setSupportActionBar(toolbar);
+        getSupportActionBar().setTitle(null);
         navigationView();
         if (preferences() != null) {
             unit = preferences();
@@ -109,7 +109,6 @@ public class MainActivity extends AppCompatActivity
         intents();
 
     }
-
 
     private void searchview() {
         searchView = (MaterialSearchView) findViewById(R.id.search_view);
@@ -138,11 +137,11 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+
     private String preferences() {
         SharedPreferences sharedPreferences = this.getSharedPreferences("SAVE", MODE_PRIVATE);
         return sharedPreferences.getString("unit", null);
     }
-
     private void saveTemperatureUnit() {
         SharedPreferences sharedPreferences = this.getSharedPreferences("SAVE", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -170,6 +169,10 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void intents() {
+        view = navigationView.getHeaderView(0);
+        navFavorite = view.findViewById(R.id.navigation_favorite);
+        navHome = view.findViewById(R.id.navigation_home);
+        navTempUnit = view.findViewById(R.id.navigation_temp_unit);
         navFavorite.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -177,7 +180,71 @@ public class MainActivity extends AppCompatActivity
                 startActivity(intent);
             }
         });
+
+        navHome.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, MainActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        navTempUnit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                popupMenu = new PopupMenu(MainActivity.this, navTempUnit);
+                popupMenu.getMenuInflater()
+                        .inflate(R.menu.view_temp, popupMenu.getMenu());
+                final MenuItem celsius = popupMenu.getMenu().findItem(R.id.menu_celsius);
+                final MenuItem fahrenheit = popupMenu.getMenu().findItem(R.id.menu_fahrenheit);
+                String units = preferences();
+                if (units.endsWith("metric")) {
+                    fahrenheit.setChecked(false);
+                    celsius.setChecked(true);
+
+
+                } else if (units.endsWith("imperial")) {
+
+                    celsius.setChecked(false);
+                    fahrenheit.setChecked(true);
+
+                }
+                popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem item) {
+                        switch (item.getItemId()) {
+                            case R.id.menu_celsius:
+                                if (!item.isChecked()) {
+                                    item.setChecked(true);
+                                    unit = "metric";
+                                    saveTemperatureUnit();
+                                    if (fahrenheit.isChecked()) {
+                                        fahrenheit.setChecked(false);
+                                    }
+                                }
+                                break;
+                            case R.id.menu_fahrenheit:
+                                if (!item.isChecked()) {
+                                    item.setChecked(true);
+                                    unit = "imperial";
+                                    saveTemperatureUnit();
+                                    if (celsius.isChecked()) {
+                                        celsius.setChecked(false);
+                                    }
+                                }
+                                break;
+                        }
+                        return false;
+                    }
+                });
+                popupMenu.show();
+
+            }
+        });
+
+
     }
+
 
     @Override
     public void onConnected(Bundle bundle) {
@@ -223,6 +290,7 @@ public class MainActivity extends AppCompatActivity
         }
 
     }
+
 
     private boolean isNetworkAvailable() {
         ConnectivityManager connectivityManager
