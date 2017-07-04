@@ -69,6 +69,7 @@ public class MainActivity extends AppCompatActivity
     private PopupMenu popupMenu;
     private boolean intentHasExtras = false;
     private double longtitude, latitude;
+    private boolean afterRecreate = false;
 
 
     @Override
@@ -112,6 +113,10 @@ public class MainActivity extends AppCompatActivity
         searchview();
         connectionProblemSnackbar();
         intents();
+        if (getAfterRecreateSavedCityName() != null) {
+            afterRecreate = true;
+            new FindCityByName().execute(getAfterRecreateSavedCityName(), unit);
+        }
 
     }
 
@@ -196,6 +201,22 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
+    private void saveUnitAfterRecreate(String cityName) {
+        SharedPreferences sharedPreferences = MainActivity.this.getSharedPreferences("RECREATE", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("CITYNAME", cityName);
+        editor.commit();
+    }
+
+    private String getAfterRecreateSavedCityName() {
+        SharedPreferences sharedPreferences = MainActivity.this.getSharedPreferences("RECREATE", MODE_PRIVATE);
+        String name = sharedPreferences.getString("CITYNAME", null);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.clear();
+        editor.commit();
+        return name;
+    }
+
     private void navigationView() {
         actionBarDrawerToggle = new ActionBarDrawerToggle(MainActivity.this, drawerLayout, toolbar, R.string.drawer_open, R.string.drawer_close);
         drawerLayout.addDrawerListener(actionBarDrawerToggle);
@@ -209,6 +230,7 @@ public class MainActivity extends AppCompatActivity
             intentHasExtras = true;
         } else {
             intentHasExtras = false;
+
         }
     }
 
@@ -274,7 +296,7 @@ public class MainActivity extends AppCompatActivity
                 final MenuItem celsius = popupMenu.getMenu().findItem(R.id.menu_celsius);
                 final MenuItem fahrenheit = popupMenu.getMenu().findItem(R.id.menu_fahrenheit);
                 String units = preferences();
-                if (preferences() != null){
+                if (preferences() != null) {
                     if (units.endsWith("metric")) {
                         fahrenheit.setChecked(false);
                         celsius.setChecked(true);
@@ -301,6 +323,8 @@ public class MainActivity extends AppCompatActivity
                                         fahrenheit.setChecked(false);
                                     }
                                 }
+                                saveUnitAfterRecreate(weather.getName());
+                                recreate();
                                 break;
                             case R.id.menu_fahrenheit:
                                 if (!item.isChecked()) {
@@ -311,6 +335,8 @@ public class MainActivity extends AppCompatActivity
                                         celsius.setChecked(false);
                                     }
                                 }
+                                saveUnitAfterRecreate(weather.getName());
+                                recreate();
                                 break;
                         }
                         return false;
@@ -331,7 +357,7 @@ public class MainActivity extends AppCompatActivity
             locationRequest();
         }
         location = LocationServices.FusedLocationApi.getLastLocation(client);
-        if (location != null && !intentHasExtras) {
+        if (location != null && !intentHasExtras && !afterRecreate) {
             latitude = location.getLatitude();
             longtitude = location.getLongitude();
             new FindCityByCoordinates().execute(String.valueOf(latitude), String.valueOf(longtitude), unit);
@@ -424,9 +450,9 @@ public class MainActivity extends AppCompatActivity
                     mPreesure.setText(String.valueOf(weather.getMain().getPressure()) + " hPa" + "\n" + "Pressure");
                     mLastUpdate.setText(String.valueOf(calendar.getTime()));
                     if (unit.equals("metric")) {
-                        mWindSpeed.setText(String.valueOf(weather.getWind().getSpeed() + " Meter/Sec") + "\n" + "Wind Speed");
+                        mWindSpeed.setText(String.valueOf(weather.getWind().getSpeed() + " Met/Sec") + "\n" + "Wind Speed");
                     } else {
-                        mWindSpeed.setText(String.valueOf(weather.getWind().getSpeed() + " Mile/Hour") + "\n" + "WindSpeed");
+                        mWindSpeed.setText(String.valueOf(weather.getWind().getSpeed() + " Mil/Hou") + "\n" + "Wind Speed");
                     }
                     mName.setText(weather.getName());
 
@@ -493,9 +519,9 @@ public class MainActivity extends AppCompatActivity
                     mPreesure.setText(String.valueOf(weather.getMain().getPressure()) + " hPa" + "\n" + "Pressure");
                     mLastUpdate.setText(String.valueOf(calendar.getTime()));
                     if (unit.equals("metric")) {
-                        mWindSpeed.setText(String.valueOf(weather.getWind().getSpeed() + " Meter/Sec") + "\n" + "Wind Speed");
+                        mWindSpeed.setText(String.valueOf(weather.getWind().getSpeed() + " Met/Sec") + "\n" + "Wind Speed");
                     } else {
-                        mWindSpeed.setText(String.valueOf(weather.getWind().getSpeed() + " Mile/Hour") + "\n" + "WindSpeed");
+                        mWindSpeed.setText(String.valueOf(weather.getWind().getSpeed() + " Mil/Hou") + "\n" + "WindSpeed");
                     }
                     mName.setText(weather.getName());
 

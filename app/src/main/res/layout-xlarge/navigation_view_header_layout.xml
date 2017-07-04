@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <ImageView
+        android:id="@+id/home_icon"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:src="@drawable/home" />
+
+    <ImageView
+        android:id="@+id/favorite_icon"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_below="@id/home_icon"
+        android:layout_marginTop="50dp"
+        android:src="@drawable/favorite" />
+
+    <ImageView
+        android:id="@+id/unit_icon"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_below="@id/favorite_icon"
+        android:layout_marginTop="50dp"
+        android:src="@drawable/temperatureunit" />
+
+
+    <TextView
+        android:id="@+id/navigation_home"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_toRightOf="@id/home_icon"
+        android:text="Home"
+        android:textSize="50dp" />
+
+
+    <TextView
+        android:id="@+id/navigation_favorite"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="100dp"
+        android:layout_toRightOf="@id/favorite_icon"
+        android:text="Favorite"
+        android:textSize="50dp" />
+
+
+    <TextView
+        android:id="@+id/navigation_temp_unit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="196dp"
+        android:layout_toRightOf="@id/favorite_icon"
+        android:text="temp"
+        android:textSize="50dp" />
+
+
+</RelativeLayout>

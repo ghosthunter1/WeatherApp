@@ -11,7 +11,7 @@ public class Main {
     private double temp;
     @SerializedName("pressure")
     @Expose
-    private double pressure;
+    private int pressure;
     @SerializedName("humidity")
     @Expose
     private double humidity;
@@ -30,11 +30,11 @@ public class Main {
         this.temp = temp;
     }
 
-    public double getPressure() {
+    public int getPressure() {
         return pressure;
     }
 
-    public void setPressure(double pressure) {
+    public void setPressure(int pressure) {
         this.pressure = pressure;
     }
 
