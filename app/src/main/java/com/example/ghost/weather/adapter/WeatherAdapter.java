@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.NavUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -54,8 +55,13 @@ public class WeatherAdapter extends ArrayAdapter<MainWeather> {
 
         return view;
     }
+
     private String preferences() {
-        SharedPreferences sharedPreferences = context.getSharedPreferences("SAVE", context.MODE_PRIVATE);
-        return sharedPreferences.getString("unit", null);
+        SharedPreferences sharedPreferences = context.getSharedPreferences("SAVE", Context.MODE_PRIVATE);
+        if (sharedPreferences.getString("unit", null) != null) {
+            return sharedPreferences.getString("unit", null);
+        }
+        return "metric";
+
     }
 }

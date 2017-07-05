@@ -1,11 +1,9 @@
 package com.example.ghost.weather.activites;
 
 import android.Manifest;
-import android.app.ActionBar;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
 import android.net.ConnectivityManager;
@@ -30,13 +28,11 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.ghost.weather.objects.MainWeather;
 import com.example.ghost.weather.R;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.gson.Gson;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
@@ -70,6 +66,7 @@ public class MainActivity extends AppCompatActivity
     private boolean intentHasExtras = false;
     private double longtitude, latitude;
     private boolean afterRecreate = false;
+    private String name;
 
 
     @Override
@@ -108,15 +105,17 @@ public class MainActivity extends AppCompatActivity
         if (preferences() != null) {
             unit = preferences();
         }
+        afterRecreateSavedCityName();
+        if (name != null) {
+            afterRecreate = true;
+            new FindCityByName().execute(name, unit);
+        }
         buildGoogleClient();
         intentHasExtras();
         searchview();
         connectionProblemSnackbar();
         intents();
-        if (getAfterRecreateSavedCityName() != null) {
-            afterRecreate = true;
-            new FindCityByName().execute(getAfterRecreateSavedCityName(), unit);
-        }
+
 
     }
 
@@ -201,21 +200,27 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
-    private void saveUnitAfterRecreate(String cityName) {
+    private void saveCityNametBeforeRecreate(String cityName) {
         SharedPreferences sharedPreferences = MainActivity.this.getSharedPreferences("RECREATE", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("CITYNAME", cityName);
-        editor.commit();
+        if (cityName != null) {
+            editor.putString("CITYNAME", cityName);
+            editor.commit();
+        }
     }
 
-    private String getAfterRecreateSavedCityName() {
+    private void afterRecreateSavedCityName() {
         SharedPreferences sharedPreferences = MainActivity.this.getSharedPreferences("RECREATE", MODE_PRIVATE);
-        String name = sharedPreferences.getString("CITYNAME", null);
         SharedPreferences.Editor editor = sharedPreferences.edit();
+        if (sharedPreferences.getString("CITYNAME", null) != null) {
+            name = sharedPreferences.getString("CITYNAME", null);
+
+        }
         editor.clear();
         editor.commit();
-        return name;
+
     }
+
 
     private void navigationView() {
         actionBarDrawerToggle = new ActionBarDrawerToggle(MainActivity.this, drawerLayout, toolbar, R.string.drawer_open, R.string.drawer_close);
@@ -226,6 +231,7 @@ public class MainActivity extends AppCompatActivity
 
     private void intentHasExtras() {
         if (getIntent().hasExtra("CITYNAME")) {
+           // saveCityNametBeforeRecreate(getIntent().getStringExtra("CITYNAME"));
             new FindCityByName().execute(getIntent().getStringExtra("CITYNAME"), unit);
             intentHasExtras = true;
         } else {
@@ -323,8 +329,10 @@ public class MainActivity extends AppCompatActivity
                                         fahrenheit.setChecked(false);
                                     }
                                 }
-                                saveUnitAfterRecreate(weather.getName());
-                                recreate();
+                                if (weather != null) {
+                                  saveCityNametBeforeRecreate(weather.getName());
+                                    recreate();
+                                }
                                 break;
                             case R.id.menu_fahrenheit:
                                 if (!item.isChecked()) {
@@ -335,8 +343,10 @@ public class MainActivity extends AppCompatActivity
                                         celsius.setChecked(false);
                                     }
                                 }
-                                saveUnitAfterRecreate(weather.getName());
-                                recreate();
+                                if (weather != null) {
+                                   saveCityNametBeforeRecreate(weather.getName());
+                                    recreate();
+                                }
                                 break;
                         }
                         return false;
@@ -355,6 +365,13 @@ public class MainActivity extends AppCompatActivity
     public void onConnected(Bundle bundle) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             locationRequest();
+        }else {
+            location = LocationServices.FusedLocationApi.getLastLocation(client);
+            if (location != null && !intentHasExtras && !afterRecreate) {
+                latitude = location.getLatitude();
+                longtitude = location.getLongitude();
+                new FindCityByCoordinates().execute(String.valueOf(latitude), String.valueOf(longtitude), unit);
+            }
         }
         location = LocationServices.FusedLocationApi.getLastLocation(client);
         if (location != null && !intentHasExtras && !afterRecreate) {
@@ -362,6 +379,7 @@ public class MainActivity extends AppCompatActivity
             longtitude = location.getLongitude();
             new FindCityByCoordinates().execute(String.valueOf(latitude), String.valueOf(longtitude), unit);
         }
+
     }
 
 
@@ -560,7 +578,6 @@ public class MainActivity extends AppCompatActivity
     protected void onStop() {
         super.onStop();
         client.disconnect();
-        saveTemperatureUnit();
     }
 
 }

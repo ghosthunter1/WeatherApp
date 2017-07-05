@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.nfc.Tag;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -18,6 +19,7 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -27,6 +29,7 @@ import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.ghost.weather.R;
 import com.example.ghost.weather.adapter.WeatherAdapter;
@@ -93,25 +96,34 @@ public class FavoritesActivity extends AppCompatActivity implements NavigationVi
         gson = new Gson();
         adapter = new WeatherAdapter(this, 0, new ArrayList<MainWeather>());
         listView.setAdapter(adapter);
+        preferences();
         navigationView();
         navigationView.setNavigationItemSelectedListener(this);
-        savedCityNames();
-        searchView();
-        intents();
-        onListviewItemClick();
         connectionProblemSnackbar();
+        onListviewItemClick();
+        intents();
+        searchView();
+        savedCityNames();
 
+
+    }
+
+    private void preferences() {
+        SharedPreferences sharedPreferences = this.getSharedPreferences("SAVE", MODE_PRIVATE);
+        if (sharedPreferences.getString("unit", null) != null) {
+            unit = sharedPreferences.getString("unit", null);
+        }
 
     }
 
     private void savedCityNames() {
         if (isNetworkAvailable()) {
             SharedPreferences sharedPreferences = FavoritesActivity.this.getSharedPreferences("CITYNAMES", MODE_APPEND);
-            Set<String> saves = sharedPreferences.getStringSet("NAMES", null);
-            if (saves != null) {
+            if (sharedPreferences.getStringSet("NAMES", null) != null) {
+                Set<String> saves = sharedPreferences.getStringSet("NAMES", null);
                 Iterator<String> iterator = saves.iterator();
                 while (iterator.hasNext() && isNetworkAvailable()) {
-                    new FindCityByName().execute(iterator.next(), preferences());
+                    new FindCityByName().execute(iterator.next(), unit);
                 }
             }
         }
@@ -154,15 +166,11 @@ public class FavoritesActivity extends AppCompatActivity implements NavigationVi
                         .inflate(R.menu.view_temp, popupMenu.getMenu());
                 final MenuItem celsius = popupMenu.getMenu().findItem(R.id.menu_celsius);
                 final MenuItem fahrenheit = popupMenu.getMenu().findItem(R.id.menu_fahrenheit);
-                String units = preferences();
-                if (units.endsWith("metric")) {
+                if (unit.endsWith("metric")) {
                     fahrenheit.setChecked(false);
                     celsius.setChecked(true);
                     saveTemperatureUnit();
-
-
-                } else if (units.endsWith("imperial")) {
-
+                } else if (unit.endsWith("imperial")) {
                     celsius.setChecked(false);
                     fahrenheit.setChecked(true);
                     savedCityNames();
@@ -179,9 +187,9 @@ public class FavoritesActivity extends AppCompatActivity implements NavigationVi
                                     item.setChecked(true);
                                     if (fahrenheit.isChecked()) {
                                         fahrenheit.setChecked(false);
-                                        ;
                                     }
                                 }
+                                recreate();
                                 break;
                             case R.id.menu_fahrenheit:
                                 unit = "imperial";
@@ -192,6 +200,7 @@ public class FavoritesActivity extends AppCompatActivity implements NavigationVi
                                         celsius.setChecked(false);
                                     }
                                 }
+                                recreate();
                                 break;
                         }
                         return false;
@@ -242,10 +251,6 @@ public class FavoritesActivity extends AppCompatActivity implements NavigationVi
         });
     }
 
-    private String preferences() {
-        SharedPreferences sharedPreferences = this.getSharedPreferences("SAVE", MODE_PRIVATE);
-        return sharedPreferences.getString("unit", null);
-    }
 
     private void navigationView() {
         actionBarDrawerToggle = new ActionBarDrawerToggle(FavoritesActivity.this, drawer, toolbar, R.string.drawer_open, R.string.drawer_close);
@@ -277,7 +282,7 @@ public class FavoritesActivity extends AppCompatActivity implements NavigationVi
     }
 
     public void searchView() {
-        if (isNetworkAvailable()) {
+        if (isNetworkAvailable() && searchView != null) {
             searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
                 @Override
                 public boolean onQueryTextSubmit(String query) {
@@ -319,8 +324,6 @@ public class FavoritesActivity extends AppCompatActivity implements NavigationVi
             Request request = new Request.Builder()
                     .url("http://api.openweathermap.org/data/2.5/weather?q=" + strings[0] + "&units=" + strings[1] + "&appid=0559b29e30ef329bb28d598ec6bab17d")
                     .build();
-
-
             Response response = null;
             try {
                 response = client.newCall(request).execute();
@@ -337,21 +340,18 @@ public class FavoritesActivity extends AppCompatActivity implements NavigationVi
                 weather = gson.fromJson(s, MainWeather.class);
                 if (weather.getCod() == 200) {
                     if (!set.contains(weather.getName())) {
+
                         adapter.add(weather);
                         set.add(weather.getName());
                         sharedPreferences();
                     }
                 }
-
-
             } else {
-
                 Snackbar snackbar = Snackbar.make(coordinatLayout, "Not Found", Snackbar.LENGTH_LONG);
                 snackbar.getView().setBackgroundColor(Color.TRANSPARENT);
                 snackbar.setActionTextColor(Color.WHITE);
                 snackbar.show();
             }
-
         }
     }
 
@@ -359,12 +359,10 @@ public class FavoritesActivity extends AppCompatActivity implements NavigationVi
     private void sharedPreferences() {
         SharedPreferences sharedPreferences = FavoritesActivity.this.getSharedPreferences("CITYNAMES", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putStringSet("NAMES", set);
-        editor.commit();
+        if (set != null) {
+            editor.putStringSet("NAMES", set);
+            editor.commit();
+        }
     }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-    }
 }
