@@ -29,7 +29,7 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.ghost.weather.objects.MainWeather;
+import com.example.ghost.weather.objects.current.MainWeather;
 import com.example.ghost.weather.R;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -44,6 +44,8 @@ import java.util.Calendar;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import pl.droidsonroids.gif.GifImageView;
+
 
 public class MainActivity extends AppCompatActivity
         implements GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks, NavigationView.OnNavigationItemSelectedListener {
@@ -67,6 +69,8 @@ public class MainActivity extends AppCompatActivity
     private double longtitude, latitude;
     private boolean afterRecreate = false;
     private String name;
+    private boolean searchByCoordinates = true;
+    private GifImageView gifImageView;
 
 
     @Override
@@ -85,13 +89,18 @@ public class MainActivity extends AppCompatActivity
         mHumidity = (TextView) findViewById(R.id.city_humidity);
         mPreesure = (TextView) findViewById(R.id.city_preesure);
         mClouds = (TextView) findViewById(R.id.city_clouds);
+        navigationView = (NavigationView) findViewById(R.id.navigation_view);
         mLastUpdate = (TextView) findViewById(R.id.last_update);
         mDescription = (TextView) findViewById(R.id.city_description);
         mMinMax = (TextView) findViewById(R.id.city_min_max);
         picture = (ImageView) findViewById(R.id.picture);
+        gifImageView = (GifImageView) findViewById(R.id.gif_view);
+        view = navigationView.getHeaderView(0);
+        navFavorite = view.findViewById(R.id.navigation_favorite);
+        navHome = view.findViewById(R.id.navigation_home);
+        navTempUnit = view.findViewById(R.id.navigation_temp_unit);
         mWindSpeed = (TextView) findViewById(R.id.city_wind_speed);
         drawerLayout = (DrawerLayout) findViewById(R.id.mainactivity_drawer_layout);
-        navigationView = (NavigationView) findViewById(R.id.navigation_view);
         line = (TextView) findViewById(R.id.line);
         calendar = Calendar.getInstance();
         calendar.setTimeInMillis(System.currentTimeMillis());
@@ -101,21 +110,25 @@ public class MainActivity extends AppCompatActivity
         toolbar.setBackgroundColor(Color.TRANSPARENT);
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle(null);
+        buildGoogleClient();
         navigationView();
         if (preferences() != null) {
             unit = preferences();
+        }
+        if (unit.equals("metric")) {
+            navTempUnit.setText("\u2103");
+        } else {
+            navTempUnit.setText("\u2109");
         }
         afterRecreateSavedCityName();
         if (name != null) {
             afterRecreate = true;
             new FindCityByName().execute(name, unit);
         }
-        buildGoogleClient();
         intentHasExtras();
         searchview();
         connectionProblemSnackbar();
         intents();
-
 
     }
 
@@ -148,7 +161,6 @@ public class MainActivity extends AppCompatActivity
             case "03d":
                 coordinatLayout.setBackgroundResource(R.drawable.scattered);
                 break;
-
             case "03n":
                 coordinatLayout.setBackgroundResource(R.drawable.nightcloud);
                 break;
@@ -176,6 +188,8 @@ public class MainActivity extends AppCompatActivity
             case "50n":
                 coordinatLayout.setBackgroundResource(R.drawable.nightmist);
                 break;
+            default:
+                coordinatLayout.setBackgroundResource(R.drawable.clearsky);
 
         }
     }
@@ -231,7 +245,7 @@ public class MainActivity extends AppCompatActivity
 
     private void intentHasExtras() {
         if (getIntent().hasExtra("CITYNAME")) {
-           // saveCityNametBeforeRecreate(getIntent().getStringExtra("CITYNAME"));
+            saveCityNametBeforeRecreate(getIntent().getStringExtra("CITYNAME"));
             new FindCityByName().execute(getIntent().getStringExtra("CITYNAME"), unit);
             intentHasExtras = true;
         } else {
@@ -240,10 +254,28 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    private void saveCityName(String cityName) {
+        SharedPreferences sharedPreferences = MainActivity.this.getSharedPreferences("CITY_SAVED_NAME", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("NAME", cityName);
+        editor.commit();
+    }
+
+    private String getSavedCityName() {
+        SharedPreferences sharedPreferences = MainActivity.this.getSharedPreferences("CITY_SAVED_NAME", MODE_PRIVATE);
+        if (sharedPreferences.getString("NAME", null) != null) {
+            return sharedPreferences.getString("NAME", null);
+        }
+        return null;
+    }
+
 
     private String preferences() {
         SharedPreferences sharedPreferences = this.getSharedPreferences("SAVE", MODE_PRIVATE);
-        return sharedPreferences.getString("unit", null);
+        if (sharedPreferences.getString("unit", null) != null) {
+            return sharedPreferences.getString("unit", null);
+        }
+        return "metric";
     }
 
     private void saveTemperatureUnit() {
@@ -259,6 +291,7 @@ public class MainActivity extends AppCompatActivity
         MenuItem item = menu.findItem(R.id.action_search);
         searchView.setMenuItem(item);
 
+
         return true;
     }
 
@@ -273,10 +306,6 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void intents() {
-        view = navigationView.getHeaderView(0);
-        navFavorite = view.findViewById(R.id.navigation_favorite);
-        navHome = view.findViewById(R.id.navigation_home);
-        navTempUnit = view.findViewById(R.id.navigation_temp_unit);
         navFavorite.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -330,9 +359,9 @@ public class MainActivity extends AppCompatActivity
                                     }
                                 }
                                 if (weather != null) {
-                                  saveCityNametBeforeRecreate(weather.getName());
-                                    recreate();
+                                    saveCityNametBeforeRecreate(weather.getName());
                                 }
+                                recreate();
                                 break;
                             case R.id.menu_fahrenheit:
                                 if (!item.isChecked()) {
@@ -343,10 +372,11 @@ public class MainActivity extends AppCompatActivity
                                         celsius.setChecked(false);
                                     }
                                 }
+
                                 if (weather != null) {
-                                   saveCityNametBeforeRecreate(weather.getName());
-                                    recreate();
+                                    saveCityNametBeforeRecreate(weather.getName());
                                 }
+                                recreate();
                                 break;
                         }
                         return false;
@@ -365,19 +395,21 @@ public class MainActivity extends AppCompatActivity
     public void onConnected(Bundle bundle) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             locationRequest();
-        }else {
-            location = LocationServices.FusedLocationApi.getLastLocation(client);
-            if (location != null && !intentHasExtras && !afterRecreate) {
+        }
+        location = LocationServices.FusedLocationApi.getLastLocation(client);
+        if (location != null) {
+            if (!intentHasExtras && !afterRecreate) {
                 latitude = location.getLatitude();
                 longtitude = location.getLongitude();
                 new FindCityByCoordinates().execute(String.valueOf(latitude), String.valueOf(longtitude), unit);
             }
-        }
-        location = LocationServices.FusedLocationApi.getLastLocation(client);
-        if (location != null && !intentHasExtras && !afterRecreate) {
-            latitude = location.getLatitude();
-            longtitude = location.getLongitude();
-            new FindCityByCoordinates().execute(String.valueOf(latitude), String.valueOf(longtitude), unit);
+
+        } else {
+            if (!intentHasExtras && !afterRecreate) {
+                if (getSavedCityName() != null) {
+                    new FindCityByName().execute(getSavedCityName(), unit);
+                }
+            }
         }
 
     }
@@ -397,7 +429,6 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
-
     }
 
     private void connectionProblemSnackbar() {
@@ -465,7 +496,7 @@ public class MainActivity extends AppCompatActivity
                     mMinMax.setText(String.valueOf(weather.getMain().getTempMax()) + "\u00B0" + " / " + String.valueOf(weather.getMain().getTempMin()) + "\u00B0");
                     mClouds.setText(String.valueOf(weather.getClouds().getAll()) + "%" + "\n" + "Clouds");
                     mHumidity.setText(String.valueOf(weather.getMain().getHumidity()) + "%" + "\n" + "Humidity");
-                    mPreesure.setText(String.valueOf(weather.getMain().getPressure()) + " hPa" + "\n" + "Pressure");
+                    mPreesure.setText(String.valueOf(weather.getMain().getPressure()) + " hPa" + "\n" + "       Pressure");
                     mLastUpdate.setText(String.valueOf(calendar.getTime()));
                     if (unit.equals("metric")) {
                         mWindSpeed.setText(String.valueOf(weather.getWind().getSpeed() + " Met/Sec") + "\n" + "Wind Speed");
@@ -480,6 +511,11 @@ public class MainActivity extends AppCompatActivity
                         mDescription.setText(weather.getWeather().get(i).getDescription());
                         background(i);
                     }
+                    if (gifImageView.getVisibility() != GifImageView.INVISIBLE) {
+                        gifImageView.setVisibility(GifImageView.INVISIBLE);
+                    }
+
+                    saveCityName(weather.getName());
 
 
                 } else {
@@ -534,7 +570,7 @@ public class MainActivity extends AppCompatActivity
                     mMinMax.setText(String.valueOf(weather.getMain().getTempMax()) + "\u00B0" + " / " + String.valueOf(weather.getMain().getTempMin()) + "\u00B0");
                     mClouds.setText(String.valueOf(weather.getClouds().getAll()) + "%" + "\n" + "Clouds");
                     mHumidity.setText(String.valueOf(weather.getMain().getHumidity()) + "%" + "\n" + "Humidity");
-                    mPreesure.setText(String.valueOf(weather.getMain().getPressure()) + " hPa" + "\n" + "Pressure");
+                    mPreesure.setText(String.valueOf(weather.getMain().getPressure()) + " hPa" + "\n" + "       Pressure");
                     mLastUpdate.setText(String.valueOf(calendar.getTime()));
                     if (unit.equals("metric")) {
                         mWindSpeed.setText(String.valueOf(weather.getWind().getSpeed() + " Met/Sec") + "\n" + "Wind Speed");
@@ -548,6 +584,9 @@ public class MainActivity extends AppCompatActivity
                         Picasso.with(MainActivity.this).load("http://openweathermap.org/img/w/" + weather.getWeather().get(i).getIcon() + ".png").into(picture);
                         mDescription.setText(weather.getWeather().get(i).getDescription());
                         background(i);
+                    }
+                    if (gifImageView.getVisibility() != GifImageView.INVISIBLE) {
+                        gifImageView.setVisibility(GifImageView.INVISIBLE);
                     }
 
 
@@ -566,7 +605,6 @@ public class MainActivity extends AppCompatActivity
             }
         }
     }
-
 
     @Override
     protected void onStart() {

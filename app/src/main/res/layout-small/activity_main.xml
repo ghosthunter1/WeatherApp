@@ -5,9 +5,14 @@
     android:id="@+id/mainactivity_coordinat_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/background"
+    android:background="#fff"
     tools:context="com.example.ghost.weather.activites.MainActivity">
 
+    <pl.droidsonroids.gif.GifImageView
+        android:id="@+id/gif_view"
+        android:layout_width="match_parent"
+        android:background="@drawable/backgroundgif"
+        android:layout_height="match_parent" />
 
     <android.support.v4.widget.DrawerLayout
         android:id="@+id/mainactivity_drawer_layout"

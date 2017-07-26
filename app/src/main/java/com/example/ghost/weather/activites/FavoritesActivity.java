@@ -6,7 +6,6 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.nfc.Tag;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -19,7 +18,6 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -29,14 +27,12 @@ import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.ghost.weather.R;
 import com.example.ghost.weather.adapter.WeatherAdapter;
-import com.example.ghost.weather.objects.MainWeather;
+import com.example.ghost.weather.objects.current.MainWeather;
 import com.google.gson.Gson;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
-import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -65,6 +61,8 @@ public class FavoritesActivity extends AppCompatActivity implements NavigationVi
     private MaterialSearchView searchView;
     private String unit = "metric";
     private Set<String> set = new HashSet<>();
+
+
     private TextView navHome, navFavorite, navTemp;
     private View view;
     private PopupMenu popupMenu;
@@ -97,6 +95,11 @@ public class FavoritesActivity extends AppCompatActivity implements NavigationVi
         adapter = new WeatherAdapter(this, 0, new ArrayList<MainWeather>());
         listView.setAdapter(adapter);
         preferences();
+        if (unit.equals("metric")){
+            navTemp.setText("\u2103");
+        }else {
+            navTemp.setText("\u2109");
+        }
         navigationView();
         navigationView.setNavigationItemSelectedListener(this);
         connectionProblemSnackbar();
@@ -138,10 +141,6 @@ public class FavoritesActivity extends AppCompatActivity implements NavigationVi
 
 
     private void intents() {
-        view = navigationView.getHeaderView(0);
-        navFavorite = view.findViewById(R.id.navigation_favorite);
-        navHome = view.findViewById(R.id.navigation_home);
-        navTemp = view.findViewById(R.id.navigation_temp_unit);
         navFavorite.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

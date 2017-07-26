@@ -5,9 +5,15 @@
     android:id="@+id/mainactivity_coordinat_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/background"
+    android:background="#fff"
     tools:context="com.example.ghost.weather.activites.MainActivity">
 
+
+    <pl.droidsonroids.gif.GifImageView
+        android:id="@+id/gif_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/backgroundgif" />
 
     <android.support.v4.widget.DrawerLayout
         android:id="@+id/mainactivity_drawer_layout"
@@ -55,7 +61,8 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginBottom="20dp"
-                android:textColor="@color/white" />
+                android:textColor="@color/white"
+                android:textSize="17dp" />
 
             <ImageView
                 android:id="@+id/picture"
@@ -99,7 +106,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="left"
-                android:layout_marginTop="15dp"
+                android:layout_marginTop="25dp"
                 android:textColor="@color/white"
                 android:textSize="25sp" />
 
@@ -129,9 +136,9 @@
                     android:id="@+id/city_preesure"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_centerHorizontal="true"
+                    android:layout_marginLeft="15dp"
                     android:layout_marginTop="20dp"
+                    android:layout_toRightOf="@id/city_humidity"
                     android:textColor="@color/white"
                     android:textSize="17sp" />
 
