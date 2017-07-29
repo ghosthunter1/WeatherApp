@@ -19,7 +19,9 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PopupMenu;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -29,8 +31,11 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.ghost.weather.adapter.RecyclerViewAdapter;
 import com.example.ghost.weather.objects.current.MainWeather;
 import com.example.ghost.weather.R;
+import com.example.ghost.weather.objects.threeday.DayList;
+import com.example.ghost.weather.objects.threeday.MainWeatherWeek;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
@@ -39,7 +44,11 @@ import com.miguelcatalan.materialsearchview.MaterialSearchView;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
+import java.sql.Date;
+import java.sql.Time;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -71,6 +80,9 @@ public class MainActivity extends AppCompatActivity
     private String name;
     private boolean searchByCoordinates = true;
     private GifImageView gifImageView;
+    private RecyclerView recyclerView;
+    private RecyclerViewAdapter recyclerViewAdapter;
+    private List<DayList> dayLists = new ArrayList<>();
 
 
     @Override
@@ -129,7 +141,17 @@ public class MainActivity extends AppCompatActivity
         searchview();
         connectionProblemSnackbar();
         intents();
+        recyclerView();
 
+
+    }
+
+    private void recyclerView() {
+        recyclerViewAdapter = new RecyclerViewAdapter(dayLists, this);
+        recyclerView = (RecyclerView) findViewById(R.id.recyclerview);
+        LinearLayoutManager manager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+        recyclerView.setLayoutManager(manager);
+        recyclerView.setAdapter(recyclerViewAdapter);
     }
 
     private void background(int i) {
@@ -201,6 +223,7 @@ public class MainActivity extends AppCompatActivity
             public boolean onQueryTextSubmit(String query) {
                 if (isNetworkAvailable()) {
                     new FindCityByName().execute(query, unit);
+                    new WeekForecast().execute(query, unit);
                 } else {
                     connectionProblemSnackbar();
                 }
@@ -517,6 +540,10 @@ public class MainActivity extends AppCompatActivity
 
                     saveCityName(weather.getName());
 
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTimeInMillis(1501113600);
+                    mPreesure.setText(calendar.getTime().toString());
+
 
                 } else {
                     Snackbar snackbar = Snackbar.make(coordinatLayout, "Not Found", Snackbar.LENGTH_LONG);
@@ -588,8 +615,6 @@ public class MainActivity extends AppCompatActivity
                     if (gifImageView.getVisibility() != GifImageView.INVISIBLE) {
                         gifImageView.setVisibility(GifImageView.INVISIBLE);
                     }
-
-
                 } else {
 
                     Snackbar snackbar = Snackbar.make(coordinatLayout, "Not Found", Snackbar.LENGTH_LONG);
@@ -601,6 +626,42 @@ public class MainActivity extends AppCompatActivity
             } else {
                 if (line.getVisibility() == TextView.VISIBLE) {
                     line.setVisibility(TextView.GONE);
+                }
+            }
+        }
+    }
+
+    class WeekForecast extends AsyncTask<String, String, String> {
+
+        @Override
+        protected String doInBackground(String... strings) {
+            OkHttpClient client = new OkHttpClient();
+
+            Request request = new Request.Builder()
+                    .url("http://api.openweathermap.org/data/2.5/forecast/daily?q=" + strings[0] + "&units=" + strings[1] + "&cnt=7&appid=0559b29e30ef329bb28d598ec6bab17d")
+                    .build();
+
+
+            Response response = null;
+            try {
+                response = client.newCall(request).execute();
+                return response.body().string();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            if (s != null) {
+                MainWeatherWeek weatherWeek = gson.fromJson(s, MainWeatherWeek.class);
+                if (Integer.parseInt(weatherWeek.getCod()) == 200) {
+                    for (int i = 0; i < weatherWeek.getList().size(); i++) {
+                        dayLists.add(weatherWeek.getList().get(i));
+                    }
+                    recyclerViewAdapter.notifyDataSetChanged();
+
                 }
             }
         }
@@ -618,7 +679,11 @@ public class MainActivity extends AppCompatActivity
         client.disconnect();
     }
 
+
+
 }
+
+
 
 
 

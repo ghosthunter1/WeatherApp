@@ -23,6 +23,7 @@
         <FrameLayout
             android:id="@+id/toolbar_container"
             android:layout_width="match_parent"
+            android:elevation="200dp"
             android:layout_height="wrap_content">
 
             <android.support.v7.widget.Toolbar
@@ -37,126 +38,140 @@
                 android:layout_height="wrap_content" />
         </FrameLayout>
 
-
-        <LinearLayout
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:padding="16dp">
+            android:layout_height="match_parent">
 
-
-            <TextView
-                android:id="@+id/city_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginBottom="10dp"
-                android:layout_marginTop="40dp"
-                android:textColor="@color/white"
-                android:textSize="20sp" />
-
-            <TextView
-                android:id="@+id/last_update"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginBottom="20dp"
-                android:textColor="@color/white"
-                android:textSize="17dp" />
-
-            <ImageView
-                android:id="@+id/picture"
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:layout_marginLeft="50dp" />
-
-
-            <TextView
-                android:id="@+id/city_temperature"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginLeft="70dp"
-                android:layout_marginTop="10dp"
-                android:textColor="@color/white"
-                android:textSize="40sp" />
-
-
-            <TextView
-                android:id="@+id/city_description"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginLeft="5dp"
-                android:textColor="@color/white"
-                android:textSize="25sp" />
-
-            <TextView
-                android:id="@+id/city_min_max"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginLeft="40dp"
-                android:textColor="@color/white"
-                android:textSize="18sp" />
-
-
-            <TextView
-                android:id="@+id/city_clouds"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="left"
-                android:layout_marginTop="25dp"
-                android:textColor="@color/white"
-                android:textSize="25sp" />
-
-            <TextView
-                android:id="@+id/line"
+            <LinearLayout
+                android:descendantFocusability="blocksDescendants"
                 android:layout_width="match_parent"
-                android:layout_height="2dp"
-                android:layout_gravity="center"
-                android:layout_marginTop="5dp"
-                android:background="@color/white"
-                android:visibility="gone" />
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="16dp">
 
 
                 <TextView
-                    android:id="@+id/city_humidity"
+                    android:id="@+id/city_name"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp"
+                    android:layout_gravity="center"
+                    android:layout_marginBottom="10dp"
+                    android:layout_marginTop="40dp"
                     android:textColor="@color/white"
-                    android:textSize="17sp" />
+                    android:textSize="20sp" />
 
                 <TextView
-                    android:id="@+id/city_preesure"
+                    android:id="@+id/last_update"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="15dp"
-                    android:layout_marginTop="20dp"
-                    android:layout_toRightOf="@id/city_humidity"
+                    android:layout_gravity="center"
+                    android:layout_marginBottom="20dp"
                     android:textColor="@color/white"
-                    android:textSize="17sp" />
+                    android:textSize="17dp" />
+
+                <ImageView
+                    android:id="@+id/picture"
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:layout_marginLeft="50dp" />
+
 
                 <TextView
-                    android:id="@+id/city_wind_speed"
+                    android:id="@+id/city_temperature"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentRight="true"
-                    android:layout_gravity="right"
-                    android:layout_marginTop="20dp"
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="70dp"
+                    android:layout_marginTop="10dp"
                     android:textColor="@color/white"
-                    android:textSize="17sp" />
+                    android:textSize="40sp" />
 
 
-            </RelativeLayout>
+                <TextView
+                    android:id="@+id/city_description"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="5dp"
+                    android:textColor="@color/white"
+                    android:textSize="25sp" />
+
+                <TextView
+                    android:id="@+id/city_min_max"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="40dp"
+                    android:textColor="@color/white"
+                    android:textSize="18sp" />
 
 
-        </LinearLayout>
+                <TextView
+                    android:id="@+id/city_clouds"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="left"
+                    android:layout_marginTop="25dp"
+                    android:textColor="@color/white"
+                    android:textSize="25sp" />
+
+                <TextView
+                    android:id="@+id/line"
+                    android:layout_width="match_parent"
+                    android:layout_height="2dp"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="5dp"
+                    android:background="@color/white"
+                    android:visibility="gone" />
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+
+                    <TextView
+                        android:id="@+id/city_humidity"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
+                        android:textColor="@color/white"
+                        android:textSize="17sp" />
+
+                    <TextView
+                        android:id="@+id/city_preesure"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="15dp"
+                        android:layout_marginTop="20dp"
+                        android:layout_toRightOf="@id/city_humidity"
+                        android:textColor="@color/white"
+                        android:textSize="17sp" />
+
+                    <TextView
+                        android:id="@+id/city_wind_speed"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentRight="true"
+                        android:layout_gravity="right"
+                        android:layout_marginTop="20dp"
+                        android:textColor="@color/white"
+                        android:textSize="17sp" />
+
+
+                </RelativeLayout>
+
+
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/recyclerview"
+                    android:layout_width="match_parent"
+                    android:layout_height="300dp">
+
+                </android.support.v7.widget.RecyclerView>
+
+
+            </LinearLayout>
+
+        </ScrollView>
 
 
         <include layout="@layout/navigation_view" />
