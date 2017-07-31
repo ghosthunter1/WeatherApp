@@ -1,18 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mainactivity_coordinat_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#fff"
+    android:background="#3FA9F5"
     tools:context="com.example.ghost.weather.activites.MainActivity">
 
-    <pl.droidsonroids.gif.GifImageView
-        android:id="@+id/gif_view"
-        android:layout_width="match_parent"
-        android:background="@drawable/backgroundgif"
-        android:layout_height="match_parent" />
 
     <android.support.v4.widget.DrawerLayout
         android:id="@+id/mainactivity_drawer_layout"
@@ -22,12 +18,13 @@
         <FrameLayout
             android:id="@+id/toolbar_container"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:elevation="200dp">
 
             <android.support.v7.widget.Toolbar
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
+                android:layout_height="wrap_content"
                 android:background="@color/colorPrimaryDark" />
 
             <com.miguelcatalan.materialsearchview.MaterialSearchView
@@ -36,120 +33,183 @@
                 android:layout_height="wrap_content" />
         </FrameLayout>
 
-
-        <LinearLayout
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:padding="8dp">
+            android:layout_height="match_parent">
 
 
-            <TextView
-                android:id="@+id/city_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginBottom="10dp"
-                android:layout_marginTop="40dp"
-                android:textColor="@color/white"
-                android:textSize="17dp" />
+            <LinearLayout
 
-            <TextView
-                android:id="@+id/last_update"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginBottom="10dp"
-                android:textColor="@color/white" />
-
-            <ImageView
-                android:id="@+id/picture"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_marginLeft="50dp" />
-
-
-            <TextView
-                android:id="@+id/city_temperature"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginLeft="70dp"
-                android:layout_marginTop="20dp"
-                android:textColor="@color/white"
-                android:textSize="20dp" />
-
-
-            <TextView
-                android:id="@+id/city_description"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginLeft="5dp"
-                android:textColor="@color/white" />
-
-            <TextView
-                android:id="@+id/city_min_max"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginLeft="40dp"
-                android:textColor="@color/white" />
-
-
-            <TextView
-                android:id="@+id/city_clouds"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="left"
-                android:layout_marginTop="10dp"
-                android:textColor="@color/white"
-                android:textSize="15sp" />
-
-            <TextView
-                android:id="@+id/line"
                 android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_gravity="center"
-                android:layout_marginTop="2dp"
-                android:background="@color/white"
-                android:visibility="gone" />
+                android:layout_height="match_parent"
+                android:descendantFocusability="blocksDescendants"
+                android:orientation="vertical"
+                android:padding="16dp">
 
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                <android.support.v7.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="470dp"
+                    app:cardBackgroundColor="#33ffffff">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:id="@+id/city_name"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_marginBottom="10dp"
+                            android:layout_marginTop="40dp"
+                            android:textColor="@color/white"
+                            android:textSize="18sp" />
+
+                        <TextView
+                            android:id="@+id/last_update"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_marginBottom="20dp"
+                            android:textColor="@color/white"
+                            android:textSize="17dp" />
+
+                        <ImageView
+                            android:id="@+id/picture"
+                            android:layout_width="60dp"
+                            android:layout_height="60dp"
+                            android:layout_marginLeft="50dp" />
 
 
-                <TextView
-                    android:id="@+id/city_humidity"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                        <TextView
+                            android:id="@+id/city_temperature"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_marginLeft="70dp"
+                            android:layout_marginTop="10dp"
+                            android:textColor="@color/white"
+                            android:textSize="30sp" />
+
+
+                        <TextView
+                            android:id="@+id/city_description"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_marginLeft="5dp"
+                            android:textColor="@color/white"
+                            android:textSize="25sp" />
+
+                        <TextView
+                            android:id="@+id/city_min_max"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_marginLeft="40dp"
+                            android:textColor="@color/white"
+                            android:textSize="18sp" />
+
+
+                        <TextView
+                            android:id="@+id/city_clouds"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="left"
+                            android:layout_marginTop="25dp"
+                            android:textColor="@color/white"
+                            android:textSize="25sp" />
+                    </LinearLayout>
+
+
+                </android.support.v7.widget.CardView>
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="100dp"
                     android:layout_marginTop="20dp"
-                    android:textColor="@color/white" />
+                    android:orientation="horizontal">
 
-                <TextView
-                    android:id="@+id/city_preesure"
-                    android:layout_width="wrap_content"
+
+                    <android.support.v7.widget.CardView
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        app:cardBackgroundColor="#33ffffff"
+                        app:cardCornerRadius="10dp">
+
+                        <TextView
+                            android:id="@+id/city_wind_speed"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:textColor="@color/white"
+                            android:textSize="17sp" />
+
+                    </android.support.v7.widget.CardView>
+
+                    <android.support.v7.widget.CardView
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        app:cardBackgroundColor="#33ffffff"
+                        app:cardCornerRadius="10dp">
+
+                        <TextView
+                            android:id="@+id/city_preesure"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:textColor="@color/white"
+                            android:textSize="17sp" />
+
+                    </android.support.v7.widget.CardView>
+
+                    <android.support.v7.widget.CardView
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        app:cardBackgroundColor="#33ffffff"
+                        app:cardCornerRadius="10dp">
+
+
+                        <TextView
+                            android:id="@+id/city_humidity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_marginTop="5dp"
+                            android:textColor="@color/white"
+                            android:textSize="17sp" />
+
+                    </android.support.v7.widget.CardView>
+
+
+                </LinearLayout>
+
+
+                <android.support.v7.widget.CardView
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginLeft="100dp"
-                    android:layout_marginTop="20dp"
-                    android:textColor="@color/white" />
+                    android:layout_marginTop="50dp"
+                    app:contentPadding="16dp"
+                    card_view:cardBackgroundColor="#33ffffff">
 
-                <TextView
-                    android:id="@+id/city_wind_speed"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentRight="true"
-                    android:layout_gravity="right"
-                    android:layout_marginTop="20dp"
-                    android:textColor="@color/white" />
+                    <android.support.v7.widget.RecyclerView
+                        android:id="@+id/recyclerview"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                    </android.support.v7.widget.RecyclerView>
+                </android.support.v7.widget.CardView>
 
 
-            </RelativeLayout>
+            </LinearLayout>
 
-
-        </LinearLayout>
+        </ScrollView>
 
 
         <include layout="@layout/navigation_view" />

@@ -39,7 +39,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
     @Override
     public void onBindViewHolder(MyHolder holder, int position) {
-        holder.temp.setText(String.valueOf(lists.get(position).getTemp().getDay()));
+        holder.temp.setText(String.valueOf(lists.get(position).getTemp().getDay()) + "\u00B0");
         days(holder.day, position);
         for (int i = 0; i < lists.get(position).getWeather().size(); i++) {
             Picasso.with(context).load("http://openweathermap.org/img/w/" + lists.get(position).getWeather().get(i).getIcon() + ".png").into(holder.picture);
@@ -79,16 +79,14 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             textView.setText(Days.wed[position]);
         } else if (calendar.getTime().toString().trim().startsWith("Mon")) {
             textView.setText(Days.mon[position]);
-        } else if (calendar.getTime().toString().trim().startsWith("Tues")) {
+        } else if (calendar.getTime().toString().trim().startsWith("Tue")) {
             textView.setText(Days.tue[position]);
-        } else if (calendar.getTime().toString().trim().startsWith("Thurs")) {
+        } else if (calendar.getTime().toString().trim().startsWith("Thu")) {
             textView.setText(Days.thu[position]);
         } else if (calendar.getTime().toString().trim().startsWith("Sat")) {
             textView.setText(Days.sat[position]);
         } else if (calendar.getTime().toString().trim().startsWith("Fri")) {
             textView.setText(Days.fri[position]);
-        }else {
-            textView.setText(calendar.getTime().toString());
         }
     }
 }

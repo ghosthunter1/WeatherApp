@@ -38,6 +38,7 @@
     <ImageView
         android:id="@+id/adapter_remove_item"
         android:layout_width="0dp"
+        android:src="@drawable/recyclebinicon"
         android:layout_height="match_parent"
         android:layout_weight="0.5"
         android:visibility="gone" />

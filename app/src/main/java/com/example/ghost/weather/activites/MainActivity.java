@@ -4,7 +4,13 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -19,6 +25,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.graphics.Palette;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
@@ -28,6 +35,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -40,6 +48,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
 import com.squareup.picasso.Picasso;
 
@@ -53,12 +62,11 @@ import java.util.List;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import pl.droidsonroids.gif.GifImageView;
 
 
 public class MainActivity extends AppCompatActivity
         implements GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks, NavigationView.OnNavigationItemSelectedListener {
-    private TextView mTemp, mName, navHome, navFavorite, navTempUnit, mHumidity, mPreesure, mClouds, mLastUpdate, mWindSpeed, mDescription, line, mMinMax;
+    private TextView mTemp, mName, navHome, navFavorite, navTempUnit, mHumidity, mPreesure, mClouds, mLastUpdate, mWindSpeed, mDescription, mMinMax;
     private MaterialSearchView searchView;
     private ImageView picture;
     private MainWeather weather;
@@ -78,8 +86,6 @@ public class MainActivity extends AppCompatActivity
     private double longtitude, latitude;
     private boolean afterRecreate = false;
     private String name;
-    private boolean searchByCoordinates = true;
-    private GifImageView gifImageView;
     private RecyclerView recyclerView;
     private RecyclerViewAdapter recyclerViewAdapter;
     private List<DayList> dayLists = new ArrayList<>();
@@ -89,8 +95,7 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main);
         iniUI();
     }
@@ -106,14 +111,12 @@ public class MainActivity extends AppCompatActivity
         mDescription = (TextView) findViewById(R.id.city_description);
         mMinMax = (TextView) findViewById(R.id.city_min_max);
         picture = (ImageView) findViewById(R.id.picture);
-        gifImageView = (GifImageView) findViewById(R.id.gif_view);
         view = navigationView.getHeaderView(0);
         navFavorite = view.findViewById(R.id.navigation_favorite);
         navHome = view.findViewById(R.id.navigation_home);
         navTempUnit = view.findViewById(R.id.navigation_temp_unit);
         mWindSpeed = (TextView) findViewById(R.id.city_wind_speed);
         drawerLayout = (DrawerLayout) findViewById(R.id.mainactivity_drawer_layout);
-        line = (TextView) findViewById(R.id.line);
         calendar = Calendar.getInstance();
         calendar.setTimeInMillis(System.currentTimeMillis());
         coordinatLayout = (CoordinatorLayout) findViewById(R.id.mainactivity_coordinat_layout);
@@ -136,14 +139,32 @@ public class MainActivity extends AppCompatActivity
         if (name != null) {
             afterRecreate = true;
             new FindCityByName().execute(name, unit);
+            new WeekForecast().execute(name, unit);
         }
         intentHasExtras();
         searchview();
         connectionProblemSnackbar();
         intents();
         recyclerView();
+        defaultCity();
 
 
+    }
+
+    private void defaultCity() {
+        if (name == null && !intentHasExtras && isNetworkAvailable() && getSavedCityName() == null) {
+            new FindCityByName().execute("new york", unit);
+            new WeekForecast().execute("new york", unit);
+        }
+    }
+
+    private void onRetryButtonClick(Button button) {
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                recreate();
+            }
+        });
     }
 
     private void recyclerView() {
@@ -155,66 +176,69 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void background(int i) {
-        switch (weather.getWeather().get(i).getIcon()) {
-            case "09d":
-                coordinatLayout.setBackgroundResource(R.drawable.rain);
-                break;
-            case "09n":
-                coordinatLayout.setBackgroundResource(R.drawable.rain);
-                break;
-            case "10d":
-                coordinatLayout.setBackgroundResource(R.drawable.rain);
-                break;
-            case "10n":
-                coordinatLayout.setBackgroundResource(R.drawable.rain);
-                break;
-            case "01d":
-                coordinatLayout.setBackgroundResource(R.drawable.clearsky);
-                break;
-            case "01n":
-                coordinatLayout.setBackgroundResource(R.drawable.nightclearsky);
-                break;
-            case "02d":
-                coordinatLayout.setBackgroundResource(R.drawable.fewcloud);
-                break;
-            case "02n":
-                coordinatLayout.setBackgroundResource(R.drawable.nightcloud);
-                break;
-            case "03d":
-                coordinatLayout.setBackgroundResource(R.drawable.scattered);
-                break;
-            case "03n":
-                coordinatLayout.setBackgroundResource(R.drawable.nightcloud);
-                break;
-            case "04d":
-                coordinatLayout.setBackgroundResource(R.drawable.brokencloud);
-                break;
-            case "04n":
-                coordinatLayout.setBackgroundResource(R.drawable.brokencloud);
-                break;
-            case "11d":
-                coordinatLayout.setBackgroundResource(R.drawable.storm);
-                break;
-            case "11n":
-                coordinatLayout.setBackgroundResource(R.drawable.storm);
-                break;
-            case "13d":
-                coordinatLayout.setBackgroundResource(R.drawable.snow);
-                break;
-            case "13n":
-                coordinatLayout.setBackgroundResource(R.drawable.nightsnow);
-                break;
-            case "50d":
-                coordinatLayout.setBackgroundResource(R.drawable.mist);
-                break;
-            case "50n":
-                coordinatLayout.setBackgroundResource(R.drawable.nightmist);
-                break;
-            default:
-                coordinatLayout.setBackgroundResource(R.drawable.clearsky);
+            switch (weather.getWeather().get(i).getIcon()) {
+                case "09d":
+                    coordinatLayout.setBackgroundResource(R.drawable.rain);
+                    break;
+                case "09n":
+                    coordinatLayout.setBackgroundResource(R.drawable.rain);
+                    break;
+                case "10d":
+                    coordinatLayout.setBackgroundResource(R.drawable.rain);
+                    break;
+                case "10n":
+                    coordinatLayout.setBackgroundResource(R.drawable.rain);
+                    break;
+                case "01d":
+                    coordinatLayout.setBackgroundResource(R.drawable.clearsky);
+                    break;
+                case "01n":
+                    coordinatLayout.setBackgroundResource(R.drawable.nightclearsky);
+                    break;
+                case "02d":
+                    coordinatLayout.setBackgroundResource(R.drawable.fewcloud);
+                    break;
+                case "02n":
+                    coordinatLayout.setBackgroundResource(R.drawable.nightcloud);
+                    break;
+                case "03d":
+                    coordinatLayout.setBackgroundResource(R.drawable.scattered);
+                    break;
+                case "03n":
+                    coordinatLayout.setBackgroundResource(R.drawable.nightcloud);
+                    break;
+                case "04d":
+                    coordinatLayout.setBackgroundResource(R.drawable.brokencloud);
+                    break;
+                case "04n":
+                    coordinatLayout.setBackgroundResource(R.drawable.brokencloud);
+                    break;
+                case "11d":
+                    coordinatLayout.setBackgroundResource(R.drawable.storm);
+                    break;
+                case "11n":
+                    coordinatLayout.setBackgroundResource(R.drawable.storm);
+                    break;
+                case "13d":
+                    coordinatLayout.setBackgroundResource(R.drawable.snow);
+                    break;
+                case "13n":
+                    coordinatLayout.setBackgroundResource(R.drawable.nightsnow);
+                    break;
+                case "50d":
+                    coordinatLayout.setBackgroundResource(R.drawable.mist);
+                    break;
+                case "50n":
+                    coordinatLayout.setBackgroundResource(R.drawable.nightmist);
+                    break;
+                default:
+                    coordinatLayout.setBackgroundResource(R.drawable.clearsky);
 
+
+            }
+            palette();
         }
-    }
+
 
     private void searchview() {
         searchView = (MaterialSearchView) findViewById(R.id.search_view);
@@ -270,6 +294,7 @@ public class MainActivity extends AppCompatActivity
         if (getIntent().hasExtra("CITYNAME")) {
             saveCityNametBeforeRecreate(getIntent().getStringExtra("CITYNAME"));
             new FindCityByName().execute(getIntent().getStringExtra("CITYNAME"), unit);
+            new WeekForecast().execute(getIntent().getStringExtra("CITYNAME"), unit);
             intentHasExtras = true;
         } else {
             intentHasExtras = false;
@@ -282,6 +307,8 @@ public class MainActivity extends AppCompatActivity
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("NAME", cityName);
         editor.commit();
+
+
     }
 
     private String getSavedCityName() {
@@ -290,6 +317,38 @@ public class MainActivity extends AppCompatActivity
             return sharedPreferences.getString("NAME", null);
         }
         return null;
+    }
+
+    private void palette() {
+            coordinatLayout.setDrawingCacheEnabled(true);
+            coordinatLayout.buildDrawingCache();
+            Drawable drawable = coordinatLayout.getBackground();
+            Bitmap bitmap = drawableToBitmap(drawable);
+            Palette.from(bitmap).generate(new Palette.PaletteAsyncListener() {
+                @Override
+                public void onGenerated(Palette palette) {
+                    navigationView.setBackgroundColor(palette.getLightMutedColor(Color.BLUE));
+                }
+            });
+        }
+
+
+    public static Bitmap drawableToBitmap(Drawable drawable) {
+        if (drawable instanceof BitmapDrawable) {
+            return ((BitmapDrawable) drawable).getBitmap();
+        }
+
+        int width = drawable.getIntrinsicWidth();
+        width = width > 0 ? width : 1;
+        int height = drawable.getIntrinsicHeight();
+        height = height > 0 ? height : 1;
+
+        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
+
+        return bitmap;
     }
 
 
@@ -342,6 +401,7 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View view) {
                 Intent intent = new Intent(MainActivity.this, MainActivity.class);
                 startActivity(intent);
+
             }
         });
 
@@ -384,6 +444,7 @@ public class MainActivity extends AppCompatActivity
                                 if (weather != null) {
                                     saveCityNametBeforeRecreate(weather.getName());
                                 }
+                                drawerLayout.closeDrawers();
                                 recreate();
                                 break;
                             case R.id.menu_fahrenheit:
@@ -425,12 +486,14 @@ public class MainActivity extends AppCompatActivity
                 latitude = location.getLatitude();
                 longtitude = location.getLongitude();
                 new FindCityByCoordinates().execute(String.valueOf(latitude), String.valueOf(longtitude), unit);
+                new WeekForecastByCoordinates().execute(String.valueOf(latitude), String.valueOf(longtitude), unit);
             }
 
         } else {
             if (!intentHasExtras && !afterRecreate) {
                 if (getSavedCityName() != null) {
                     new FindCityByName().execute(getSavedCityName(), unit);
+                    new WeekForecast().execute(getSavedCityName(), unit);
                 }
             }
         }
@@ -508,9 +571,6 @@ public class MainActivity extends AppCompatActivity
             if (s != null && s.contains("cod")) {
                 weather = gson.fromJson(s, MainWeather.class);
                 if (weather.getCod() == 200) {
-                    if (!(line.getVisibility() == TextView.VISIBLE)) {
-                        line.setVisibility(TextView.VISIBLE);
-                    }
                     if (unit.equals("metric")) {
                         mTemp.setText(String.valueOf(weather.getMain().getTemp()) + "\u2103");
                     } else {
@@ -519,12 +579,12 @@ public class MainActivity extends AppCompatActivity
                     mMinMax.setText(String.valueOf(weather.getMain().getTempMax()) + "\u00B0" + " / " + String.valueOf(weather.getMain().getTempMin()) + "\u00B0");
                     mClouds.setText(String.valueOf(weather.getClouds().getAll()) + "%" + "\n" + "Clouds");
                     mHumidity.setText(String.valueOf(weather.getMain().getHumidity()) + "%" + "\n" + "Humidity");
-                    mPreesure.setText(String.valueOf(weather.getMain().getPressure()) + " hPa" + "\n" + "       Pressure");
+                    mPreesure.setText(String.valueOf(weather.getMain().getPressure()) + " hPa" + "\n" + "Pressure");
                     mLastUpdate.setText(String.valueOf(calendar.getTime()));
                     if (unit.equals("metric")) {
-                        mWindSpeed.setText(String.valueOf(weather.getWind().getSpeed() + " Met/Sec") + "\n" + "Wind Speed");
+                        mWindSpeed.setText(String.valueOf(weather.getWind().getSpeed() + "\n" + "Met/Sec") + "\n" + "Wind Speed");
                     } else {
-                        mWindSpeed.setText(String.valueOf(weather.getWind().getSpeed() + " Mil/Hou") + "\n" + "Wind Speed");
+                        mWindSpeed.setText(String.valueOf(weather.getWind().getSpeed() + "\n" + " Mil/Hou") + "\n" + "Wind Speed");
                     }
                     mName.setText(weather.getName());
 
@@ -534,15 +594,8 @@ public class MainActivity extends AppCompatActivity
                         mDescription.setText(weather.getWeather().get(i).getDescription());
                         background(i);
                     }
-                    if (gifImageView.getVisibility() != GifImageView.INVISIBLE) {
-                        gifImageView.setVisibility(GifImageView.INVISIBLE);
-                    }
 
                     saveCityName(weather.getName());
-
-                    Calendar calendar = Calendar.getInstance();
-                    calendar.setTimeInMillis(1501113600);
-                    mPreesure.setText(calendar.getTime().toString());
 
 
                 } else {
@@ -553,9 +606,7 @@ public class MainActivity extends AppCompatActivity
                 }
 
             } else {
-                if (line.getVisibility() == TextView.VISIBLE) {
-                    line.setVisibility(TextView.GONE);
-                }
+
             }
         }
     }
@@ -586,9 +637,6 @@ public class MainActivity extends AppCompatActivity
             if (s != null && s.contains("cod")) {
                 weather = gson.fromJson(s, MainWeather.class);
                 if (weather.getCod() == 200) {
-                    if (!(line.getVisibility() == TextView.VISIBLE)) {
-                        line.setVisibility(TextView.VISIBLE);
-                    }
                     if (unit.equals("metric")) {
                         mTemp.setText(String.valueOf(weather.getMain().getTemp()) + "\u2103");
                     } else {
@@ -597,12 +645,12 @@ public class MainActivity extends AppCompatActivity
                     mMinMax.setText(String.valueOf(weather.getMain().getTempMax()) + "\u00B0" + " / " + String.valueOf(weather.getMain().getTempMin()) + "\u00B0");
                     mClouds.setText(String.valueOf(weather.getClouds().getAll()) + "%" + "\n" + "Clouds");
                     mHumidity.setText(String.valueOf(weather.getMain().getHumidity()) + "%" + "\n" + "Humidity");
-                    mPreesure.setText(String.valueOf(weather.getMain().getPressure()) + " hPa" + "\n" + "       Pressure");
+                    mPreesure.setText(String.valueOf(weather.getMain().getPressure()) + " hPa" + "\n" + "Pressure");
                     mLastUpdate.setText(String.valueOf(calendar.getTime()));
                     if (unit.equals("metric")) {
-                        mWindSpeed.setText(String.valueOf(weather.getWind().getSpeed() + " Met/Sec") + "\n" + "Wind Speed");
+                        mWindSpeed.setText(String.valueOf(weather.getWind().getSpeed() + "\n" + "Met/Sec") + "\n" + "Wind Speed");
                     } else {
-                        mWindSpeed.setText(String.valueOf(weather.getWind().getSpeed() + " Mil/Hou") + "\n" + "WindSpeed");
+                        mWindSpeed.setText(String.valueOf(weather.getWind().getSpeed() + "\n" + " Mil/Hou") + "\n" + "WindSpeed");
                     }
                     mName.setText(weather.getName());
 
@@ -612,9 +660,8 @@ public class MainActivity extends AppCompatActivity
                         mDescription.setText(weather.getWeather().get(i).getDescription());
                         background(i);
                     }
-                    if (gifImageView.getVisibility() != GifImageView.INVISIBLE) {
-                        gifImageView.setVisibility(GifImageView.INVISIBLE);
-                    }
+                    palette();
+
                 } else {
 
                     Snackbar snackbar = Snackbar.make(coordinatLayout, "Not Found", Snackbar.LENGTH_LONG);
@@ -624,9 +671,6 @@ public class MainActivity extends AppCompatActivity
                 }
 
             } else {
-                if (line.getVisibility() == TextView.VISIBLE) {
-                    line.setVisibility(TextView.GONE);
-                }
             }
         }
     }
@@ -654,10 +698,13 @@ public class MainActivity extends AppCompatActivity
 
         @Override
         protected void onPostExecute(String s) {
-            if (s != null) {
+            if (s.contains("lon") && s.contains("lat")) {
                 MainWeatherWeek weatherWeek = gson.fromJson(s, MainWeatherWeek.class);
                 if (Integer.parseInt(weatherWeek.getCod()) == 200) {
                     for (int i = 0; i < weatherWeek.getList().size(); i++) {
+                        if (dayLists.size() == 7) {
+                            dayLists.clear();
+                        }
                         dayLists.add(weatherWeek.getList().get(i));
                     }
                     recyclerViewAdapter.notifyDataSetChanged();
@@ -679,6 +726,44 @@ public class MainActivity extends AppCompatActivity
         client.disconnect();
     }
 
+    class WeekForecastByCoordinates extends AsyncTask<String, String, String> {
+
+        @Override
+        protected String doInBackground(String... strings) {
+            OkHttpClient client = new OkHttpClient();
+
+            Request request = new Request.Builder()
+                    .url("http://api.openweathermap.org/data/2.5/forecast/daily?lat=" + strings[0] + "&lon=" + strings[1] + "&units=" + strings[2] + "&cnt=7&appid=0559b29e30ef329bb28d598ec6bab17d")
+                    .build();
+
+
+            Response response = null;
+            try {
+                response = client.newCall(request).execute();
+                return response.body().string();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            if (s != null && s.contains("lon") && s.contains("lat")) {
+                MainWeatherWeek weatherWeek = gson.fromJson(s, MainWeatherWeek.class);
+                if (Integer.parseInt(weatherWeek.getCod()) == 200) {
+                    for (int i = 0; i < weatherWeek.getList().size(); i++) {
+                        if (dayLists.size() == 7) {
+                            dayLists.clear();
+                        }
+                        dayLists.add(weatherWeek.getList().get(i));
+                    }
+                    recyclerViewAdapter.notifyDataSetChanged();
+
+                }
+            }
+        }
+    }
 
 
 }
