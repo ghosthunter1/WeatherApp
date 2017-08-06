@@ -89,6 +89,7 @@ public class MainActivity extends AppCompatActivity
     private RecyclerView recyclerView;
     private RecyclerViewAdapter recyclerViewAdapter;
     private List<DayList> dayLists = new ArrayList<>();
+    private static boolean unitChanged = false;
 
 
     @Override
@@ -176,6 +177,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void background(int i) {
+        if (!unitChanged) {
             switch (weather.getWeather().get(i).getIcon()) {
                 case "09d":
                     coordinatLayout.setBackgroundResource(R.drawable.rain);
@@ -238,6 +240,7 @@ public class MainActivity extends AppCompatActivity
             }
             palette();
         }
+    }
 
 
     private void searchview() {
@@ -320,17 +323,17 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void palette() {
-            coordinatLayout.setDrawingCacheEnabled(true);
-            coordinatLayout.buildDrawingCache();
-            Drawable drawable = coordinatLayout.getBackground();
-            Bitmap bitmap = drawableToBitmap(drawable);
-            Palette.from(bitmap).generate(new Palette.PaletteAsyncListener() {
-                @Override
-                public void onGenerated(Palette palette) {
-                    navigationView.setBackgroundColor(palette.getLightMutedColor(Color.BLUE));
-                }
-            });
-        }
+        coordinatLayout.setDrawingCacheEnabled(true);
+        coordinatLayout.buildDrawingCache();
+        Drawable drawable = coordinatLayout.getBackground();
+        Bitmap bitmap = drawableToBitmap(drawable);
+        Palette.from(bitmap).generate(new Palette.PaletteAsyncListener() {
+            @Override
+            public void onGenerated(Palette palette) {
+                navigationView.setBackgroundColor(palette.getLightMutedColor(Color.BLUE));
+            }
+        });
+    }
 
 
     public static Bitmap drawableToBitmap(Drawable drawable) {
@@ -433,6 +436,7 @@ public class MainActivity extends AppCompatActivity
                     public boolean onMenuItemClick(MenuItem item) {
                         switch (item.getItemId()) {
                             case R.id.menu_celsius:
+                                unitChanged = true;
                                 if (!item.isChecked()) {
                                     item.setChecked(true);
                                     unit = "metric";
@@ -448,6 +452,7 @@ public class MainActivity extends AppCompatActivity
                                 recreate();
                                 break;
                             case R.id.menu_fahrenheit:
+                                unitChanged = true;
                                 if (!item.isChecked()) {
                                     item.setChecked(true);
                                     unit = "imperial";
@@ -597,6 +602,7 @@ public class MainActivity extends AppCompatActivity
 
                     saveCityName(weather.getName());
 
+                    palette();
 
                 } else {
                     Snackbar snackbar = Snackbar.make(coordinatLayout, "Not Found", Snackbar.LENGTH_LONG);
@@ -660,7 +666,9 @@ public class MainActivity extends AppCompatActivity
                         mDescription.setText(weather.getWeather().get(i).getDescription());
                         background(i);
                     }
-                    palette();
+                    if (unitChanged){
+                        unitChanged = false;
+                    }
 
                 } else {
 
